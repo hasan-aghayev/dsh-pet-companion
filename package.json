@@ -1,0 +1,58 @@
+{
+  "name": "dsh-lokki-companion",
+  "version": "0.1.0",
+  "description": "A floating desktop companion for DeepSeek Harness with a reusable pet library and live agent pulse.",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": [
+    "src/",
+    "desktop/",
+    "assets/",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "locale/"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/index.js && node --check src/pets.js && node --check src/runtime.js && node --check src/input-bridge.js && node --check desktop/main.cjs && node --check desktop/wslg-topmost.cjs && node --check desktop/preload.cjs && node --check desktop/renderer.js && node --test"
+  },
+  "dependencies": {
+    "@electron/get": "^5.1.0",
+    "extract-zip": "^2.0.1",
+    "image-size": "^2.0.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": ">=3.0.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.18.4"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "desktop-pet",
+    "hatch-pet"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hasan-aghayev/dsh-lokki-companion.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hasan-aghayev/dsh-lokki-companion/issues"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  }
+}

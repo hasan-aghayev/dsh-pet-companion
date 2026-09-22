@@ -1,0 +1,12 @@
+- insert:
+    - id: lokki-companion
+      name: dsh-lokki-companion
+      config:
+        enabled: true
+        petId: lokki
+        size: 150
+        opacity: 100
+        alwaysOnTop: true
+        reducedMotion: false
+        language: en
+        themePreference: system
