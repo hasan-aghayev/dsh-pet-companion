@@ -1,0 +1,9 @@
+{
+  "id": "professor-leo",
+  "displayName": "Professor Leo",
+  "displayNameZh": "利奥教授",
+  "description": "A curious lion scientist who turns questions into discoveries.",
+  "descriptionZh": "一只好奇的狮子科学家，把每个问题变成新的发现。",
+  "spriteVersionNumber": 2,
+  "spritesheetPath": "spritesheet.webp"
+}

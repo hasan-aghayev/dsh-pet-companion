@@ -7,13 +7,14 @@ import path from 'node:path'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const json = async (relative) => JSON.parse(await readFile(path.join(root, relative), 'utf8'))
 
-test('product-facing names are generic while Lokki remains a pet entry', async () => {
-  const [english, chinese, englishCard, chineseCard, manifest, readme, packageJson, cordis, client] = await Promise.all([
+test('product-facing names stay generic while built-in pets remain entries', async () => {
+  const [english, chinese, englishCard, chineseCard, manifest, professorLeoManifest, readme, packageJson, cordis, client] = await Promise.all([
     json('desktop/locales/en.json'),
     json('desktop/locales/zh.json'),
     json('locale/en.json'),
     json('locale/zh.json'),
     json('assets/pets/lokki/pet.json'),
+    json('assets/pets/professor-leo/pet.json'),
     readFile(path.join(root, 'README.md'), 'utf8'),
     json('package.json'),
     readFile(path.join(root, 'cordis.patch.yml'), 'utf8'),
@@ -28,7 +29,10 @@ test('product-facing names are generic while Lokki remains a pet entry', async (
   assert.equal(english.closePet, 'Close pet')
   assert.equal(chinese.closePet, '关闭宠物')
   assert.equal(manifest.displayName, 'Lokki')
-  assert.match(readme, /Lokki is the first built-in pet/)
+  assert.equal(professorLeoManifest.displayName, 'Professor Leo')
+  assert.equal(professorLeoManifest.displayNameZh, '利奥教授')
+  assert.match(readme, /bundled collection currently includes Lokki and Professor Leo/)
+  assert.ok(readme.includes('assets/readme/professor-leo.png'))
   assert.equal(packageJson.icon, './assets/companion-mark.svg')
   assert.equal(packageJson.name, 'dsh-pet-companion')
   assert.match(readme, /github:hasan-aghayev\/dsh-pet-companion/)

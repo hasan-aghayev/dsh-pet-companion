@@ -4,7 +4,7 @@
   <img src="assets/companion-mark.svg" width="72" alt="DSH Pet Companion">
 </p>
 
-A floating desktop pet for DeepSeek Harness. It reacts to agent activity in a separate transparent window and includes a folder-based library for adding pets from animated atlases or transparent portraits. Lokki is the first built-in pet.
+A floating desktop pet for DeepSeek Harness. It reacts to agent activity in a separate transparent window and includes a folder-based library for adding pets from animated atlases or transparent portraits. The bundled collection currently includes Lokki and Professor Leo, and the folder-based library supports adding more pets.
 
 ## Screenshots
 
@@ -13,13 +13,19 @@ A floating desktop pet for DeepSeek Harness. It reacts to agent activity in a se
     <th align="center">Companion and hover controls</th>
     <th align="center">Settings in English</th>
     <th align="center">Settings in Simplified Chinese</th>
+    <th align="center">Professor Leo</th>
   </tr>
   <tr>
     <td align="center"><img src="assets/readme/companion-controls.png" width="230" alt="Lokki with settings, message, and close controls"></td>
     <td align="center"><img src="assets/readme/settings-en.png" width="360" alt="English appearance and behavior settings"></td>
     <td align="center"><img src="assets/readme/settings-zh.png" width="360" alt="Simplified Chinese appearance and behavior settings"></td>
+    <td align="center"><img src="assets/readme/professor-leo.png" width="150" alt="Professor Leo, the second built-in pet: a curious lion scientist with a copper mane, teal glasses, and a white lab coat"></td>
   </tr>
 </table>
+
+## Built-in pets
+
+Professor Leo is a curious lion scientist with a copper mane, teal glasses, and a white lab coat. He brings a researcher's curious, thoughtful personality to the companion collection. His name and description follow the English or Simplified Chinese DSH locale.
 
 ## What it does
 
@@ -29,6 +35,7 @@ A floating desktop pet for DeepSeek Harness. It reacts to agent activity in a se
 - Lets the DSH sidebar's **Show pet** switch hide or restore the companion while leaving the plugin enabled. Closing the pet also turns this switch off.
 - Offers appearance, language, size, opacity, always-on-top, reduced-motion, and wandering settings.
 - Follows DSH's English or Chinese locale by default; the language can also be selected in Settings.
+- Includes Lokki, a copper tech fox, and Professor Leo, a curious lion scientist. Both ship with Hatch-Pet v2 animation atlases and English and Simplified Chinese labels.
 - Loads additional pet folders without rebuilding or reinstalling the plugin. A single transparent portrait can be used without creating an animation atlas.
 
 ## Install and remove
@@ -104,4 +111,4 @@ The package contains ready-to-run JavaScript and static desktop files, so it nee
 
 ## License
 
-MIT. The Lokki sprite art is included with permission from its creator, Hasan Aghayev. Do not redistribute the artwork separately from this plugin without permission.
+MIT. The Lokki sprite art is included with permission from its creator, Hasan Aghayev. The Professor Leo sprite art was generated for this repository and is included in the plugin package. Do not redistribute Lokki artwork separately from this plugin without permission.

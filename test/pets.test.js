@@ -9,16 +9,27 @@ import { discoverPets } from '../src/pets.js'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const builtIn = path.join(root, 'assets', 'pets')
 
-test('finds the built-in Lokki Hatch-Pet v2 atlas', async () => {
+test('finds both built-in Hatch-Pet v2 atlases', async () => {
   const { pets, errors } = await discoverPets(builtIn, path.join(os.tmpdir(), 'missing-lokki-library'))
   assert.equal(errors.length, 0)
-  assert.equal(pets.length, 1)
-  assert.equal(pets[0].id, 'lokki')
-  assert.equal(pets[0].displayName, 'Lokki')
-  assert.equal(pets[0].displayNameZh, '洛奇')
-  assert.equal(pets[0].mode, 'atlas-v2')
-  assert.equal(pets[0].width, 1536)
-  assert.equal(pets[0].height, 2288)
+  assert.equal(pets.length, 2)
+
+  const lokki = pets.find((pet) => pet.id === 'lokki')
+  assert.ok(lokki)
+  assert.equal(lokki.displayName, 'Lokki')
+  assert.equal(lokki.displayNameZh, '洛奇')
+  assert.equal(lokki.mode, 'atlas-v2')
+  assert.equal(lokki.width, 1536)
+  assert.equal(lokki.height, 2288)
+
+  const professorLeo = pets.find((pet) => pet.id === 'professor-leo')
+  assert.ok(professorLeo)
+  assert.equal(professorLeo.displayName, 'Professor Leo')
+  assert.equal(professorLeo.displayNameZh, '利奥教授')
+  assert.equal(professorLeo.descriptionZh, '一只好奇的狮子科学家，把每个问题变成新的发现。')
+  assert.equal(professorLeo.mode, 'atlas-v2')
+  assert.equal(professorLeo.width, 1536)
+  assert.equal(professorLeo.height, 2288)
 })
 
 test('accepts portraits and rejects image paths outside a pet folder', async (t) => {
