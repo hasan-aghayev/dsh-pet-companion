@@ -9,6 +9,7 @@ const { createWslgTopmostBridge, readWslgScaleFactor } = require('./wslg-topmost
 const { getDragPosition } = require('./drag.cjs')
 const { buildNativeDragScript, isWslgEnvironment } = require('./native-drag.cjs')
 const { closePet } = require('./close-pet.cjs')
+const { acquireSingleInstanceLock } = require('./single-instance.cjs')
 
 // WSLg exposes both Wayland and X11, but this floating window needs X11's
 // position and stacking controls to remain visible across Windows apps.
@@ -61,12 +62,15 @@ const wslgSettingsTopmost = createWslgTopmostBridge({ windowTitle: 'DSH Pet Comp
 
 app.setName('DSH Pet Companion')
 Menu.setApplicationMenu(null)
-const profileId = createHash('sha256').update(dshHome.toLowerCase()).digest('hex').slice(0, 16)
-const electronData = process.platform === 'win32'
-  ? path.join(app.getPath('userData'), profileId)
-  : path.join(dataRoot, 'electron-user-data')
-fsSync.mkdirSync(electronData, { recursive: true, mode: 0o700 })
-app.setPath('userData', electronData)
+// Acquire the app-wide lock before setting profile-specific Electron storage.
+const hasSingleInstanceLock = acquireSingleInstanceLock(app, () => {
+  const profileId = createHash('sha256').update(dshHome.toLowerCase()).digest('hex').slice(0, 16)
+  const electronData = process.platform === 'win32'
+    ? path.join(app.getPath('userData'), profileId)
+    : path.join(dataRoot, 'electron-user-data')
+  fsSync.mkdirSync(electronData, { recursive: true, mode: 0o700 })
+  app.setPath('userData', electronData)
+})
 app.on('web-contents-created', (_event, contents) => {
   contents.setWindowOpenHandler(() => ({ action: 'deny' }))
   contents.on('will-navigate', (event, url) => {
@@ -557,42 +561,44 @@ nativeTheme.on('updated', () => {
   }
 })
 
-app.whenReady().then(async () => {
-  const petModule = await import('../src/pets.js')
-  discoverPets = petModule.discoverPets
-  settings = { ...settings, ...(await readJson(settingsFile, {})) }
-  delete settings.showStatusBubble
-  if (!['en', 'zh'].includes(settings.language)) settings.language = 'en'
-  if (!['system', 'light', 'dark'].includes(settings.themePreference)) settings.themePreference = 'system'
-  snapshot = { ...(await readJson(stateFile, snapshot)), settings, libraryDir }
-  startNativePetDragHost()
-  await refreshPets()
-  await createPetWindow()
-  void readWslgScaleFactor().then((scaleFactor) => { pointerScaleFactor = scaleFactor })
-  sendSnapshot()
-  if (args['capture-settings'] === 'true') await openSettings()
-  setInterval(() => { void pollPromptResult() }, 250)
-  if (args.capture) setTimeout(async () => {
-    const target = args['capture-settings'] === 'true' ? settingsWindow : petWindow
-    if (target && !target.isDestroyed()) await fs.writeFile(args.capture, (await target.webContents.capturePage()).toPNG())
-  }, 1400)
-  setInterval(async () => {
-    const next = await readJson(stateFile, snapshot)
-    const nextVisible = typeof next?.settings?.visible === 'boolean' ? next.settings.visible : settings.visible !== false
-    if (next && (next.updatedAt !== snapshot.updatedAt || nextVisible !== (settings.visible !== false))) {
-      const visibilityChanged = nextVisible !== (settings.visible !== false)
-      settings = { ...settings, visible: nextVisible }
-      snapshot = { ...next, settings, libraryDir }
-      if (visibilityChanged) setPetVisible(nextVisible)
-      if (Number(snapshot.activeAgents || 0) > 0 || settings.reducedMotion || !settings.wander) stopWander()
-      sendSnapshot()
-    }
-  }, 450)
-  setInterval(async () => { await refreshPets() }, 5000)
-}).catch((error) => {
-  console.error('[dsh-pet-companion] startup failed: ' + (error.stack || error))
-  app.quit()
-})
+if (hasSingleInstanceLock) {
+  app.whenReady().then(async () => {
+    const petModule = await import('../src/pets.js')
+    discoverPets = petModule.discoverPets
+    settings = { ...settings, ...(await readJson(settingsFile, {})) }
+    delete settings.showStatusBubble
+    if (!['en', 'zh'].includes(settings.language)) settings.language = 'en'
+    if (!['system', 'light', 'dark'].includes(settings.themePreference)) settings.themePreference = 'system'
+    snapshot = { ...(await readJson(stateFile, snapshot)), settings, libraryDir }
+    startNativePetDragHost()
+    await refreshPets()
+    await createPetWindow()
+    void readWslgScaleFactor().then((scaleFactor) => { pointerScaleFactor = scaleFactor })
+    sendSnapshot()
+    if (args['capture-settings'] === 'true') await openSettings()
+    setInterval(() => { void pollPromptResult() }, 250)
+    if (args.capture) setTimeout(async () => {
+      const target = args['capture-settings'] === 'true' ? settingsWindow : petWindow
+      if (target && !target.isDestroyed()) await fs.writeFile(args.capture, (await target.webContents.capturePage()).toPNG())
+    }, 1400)
+    setInterval(async () => {
+      const next = await readJson(stateFile, snapshot)
+      const nextVisible = typeof next?.settings?.visible === 'boolean' ? next.settings.visible : settings.visible !== false
+      if (next && (next.updatedAt !== snapshot.updatedAt || nextVisible !== (settings.visible !== false))) {
+        const visibilityChanged = nextVisible !== (settings.visible !== false)
+        settings = { ...settings, visible: nextVisible }
+        snapshot = { ...next, settings, libraryDir }
+        if (visibilityChanged) setPetVisible(nextVisible)
+        if (Number(snapshot.activeAgents || 0) > 0 || settings.reducedMotion || !settings.wander) stopWander()
+        sendSnapshot()
+      }
+    }, 450)
+    setInterval(async () => { await refreshPets() }, 5000)
+  }).catch((error) => {
+    console.error('[dsh-pet-companion] startup failed: ' + (error.stack || error))
+    app.quit()
+  })
+}
 
 app.on('before-quit', () => {
   nativePetDragReady = false

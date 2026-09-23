@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check client.js && node --check src/index.js && node --check src/data-root.js && node --check src/visibility-route.js && node --check src/pets.js && node --check src/runtime.js && node --check src/input-bridge.js && node --check desktop/main.cjs && node --check desktop/close-pet.cjs && node --check desktop/wslg-topmost.cjs && node --check desktop/native-drag.cjs && node --check desktop/preload.cjs && node --check desktop/renderer.js && node --test"
+    "check": "node --check client.js && node --check src/index.js && node --check src/data-root.js && node --check src/visibility-route.js && node --check src/pets.js && node --check src/runtime.js && node --check src/input-bridge.js && node --check desktop/main.cjs && node --check desktop/single-instance.cjs && node --check desktop/close-pet.cjs && node --check desktop/wslg-topmost.cjs && node --check desktop/native-drag.cjs && node --check desktop/preload.cjs && node --check desktop/renderer.js && node --test"
   },
   "dependencies": {
     "@electron/get": "^5.1.0",

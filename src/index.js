@@ -170,7 +170,9 @@ export function apply(ctx, config) {
       child.on('error', (error) => ctx.logger?.error?.('could not start companion window: ' + error.message))
       child.on('exit', (code, signal) => {
         child = undefined
-        if (!stopped) ctx.logger?.warn?.('companion window closed (code=' + (code ?? 'none') + ', signal=' + (signal ?? 'none') + '); restart DSH to reopen it')
+        if (!stopped && (code !== 0 || signal)) {
+          ctx.logger?.warn?.('companion window closed (code=' + (code ?? 'none') + ', signal=' + (signal ?? 'none') + '); restart DSH to reopen it')
+        }
       })
       ctx.logger?.info?.('Pet companion started; pet library: ' + userLibrary)
     } catch (error) {
