@@ -1,6 +1,6 @@
 {
-  "appTitle": "Lokki Companion",
-  "settingsTitle": "Lokki 设置",
+  "appTitle": "DSH 桌面宠物伙伴",
+  "settingsTitle": "设置",
   "settingsShortcut": "打开设置",
   "pet": "宠物",
   "builtIn": "内置",
@@ -30,9 +30,14 @@
   "pixels": "像素",
   "percent": "%",
   "typeMessage": "输入消息",
-  "closePet": "关闭 Lokki",
+  "closePet": "关闭宠物",
   "inputPlaceholder": "输入消息 · 按 Enter 发送",
   "sending": "正在发送…",
   "sent": "消息已添加到会话。",
-  "noSessions": "当前没有运行中的 DSH 会话。"
+  "noSessions": "当前没有运行中的 DSH 会话。",
+  "wander": "允许所选宠物在桌面上走动",
+  "settingsDescription": "选择宠物，并自定义它的外观与行为。",
+  "settingsEyebrow": "桌面伙伴",
+  "closeSettings": "关闭设置",
+  "behavior": "行为"
 }

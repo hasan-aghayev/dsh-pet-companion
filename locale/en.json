@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Lokki Companion",
-    "description": "A floating desktop pet that mirrors live DSH agent activity and supports a growing local companion library."
+    "title": "DSH Pet Companion",
+    "description": "A floating desktop companion for DeepSeek Harness that reflects live agent activity and supports a growing local pet collection."
   }
 }

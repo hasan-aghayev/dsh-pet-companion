@@ -1,6 +1,6 @@
 - insert:
-    - id: lokki-companion
-      name: dsh-lokki-companion
+    - id: pet-companion
+      name: dsh-pet-companion
       config:
         enabled: true
         petId: lokki

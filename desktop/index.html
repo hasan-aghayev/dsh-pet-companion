@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lokki Companion</title>
+  <title>DSH Pet Companion</title>
+  <link rel="icon" href="../assets/companion-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./dsh-theme.css">
   <link rel="stylesheet" href="./style.css">
+  <script defer src="./animations.cjs"></script>
   <script defer src="./renderer.js"></script>
 </head>
 <body>
@@ -18,7 +20,7 @@
       <button id="input-shortcut" class="pet-control" type="button" title="Type a message" aria-label="Type a message" aria-expanded="false" aria-controls="prompt-panel">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.6-3.2A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8.5 11.5h.01m4-.01h.01m4-.01h.01"/></svg>
       </button>
-      <button id="close-shortcut" class="pet-control" type="button" title="Close Lokki" aria-label="Close Lokki">
+      <button id="close-shortcut" class="pet-control" type="button" title="Close pet" aria-label="Close pet">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
       </button>
     </div>
@@ -26,37 +28,65 @@
       <textarea id="prompt-text" rows="3" maxlength="20000" placeholder="Write a message · Enter to send" data-i18n-placeholder="inputPlaceholder" aria-label="Message"></textarea>
       <span id="prompt-feedback" class="visually-hidden" aria-live="polite"></span>
     </form>
-    <div id="sprite" class="sprite" aria-label="Lokki"></div>
-    <div id="portrait" class="portrait" hidden><img id="portrait-image" alt=""></div>
+    <div id="sprite" class="sprite" role="button" tabindex="0" aria-label="Pet"></div>
+    <div id="portrait" class="portrait" role="button" tabindex="0" aria-label="Pet" hidden><img id="portrait-image" alt=""></div>
   </main>
   <main id="settings-view" class="settings-view" hidden>
     <header class="settings-header">
-      <div><span class="eyebrow">DESKTOP COMPANION</span><h1 data-i18n="settingsTitle">Lokki settings</h1></div>
-      <span class="fox-mark" aria-hidden="true">L</span>
-    </header>
-    <label class="field">
-      <span data-i18n="language">Language</span>
-      <select id="language"><option value="en">English</option><option value="zh">简体中文</option></select>
-    </label>
-    <section class="appearance-setting" aria-labelledby="appearance-label">
-      <div class="setting-title" id="appearance-label" data-i18n="appearance">Appearance</div>
-      <div class="theme-options" role="group" aria-labelledby="appearance-label">
-        <button type="button" class="theme-option" data-theme="light" aria-pressed="false"><span class="theme-icon theme-icon-light" aria-hidden="true"></span><span data-i18n="themeLight">Light</span></button>
-        <button type="button" class="theme-option" data-theme="dark" aria-pressed="false"><span class="theme-icon theme-icon-dark" aria-hidden="true"></span><span data-i18n="themeDark">Dark</span></button>
-        <button type="button" class="theme-option" data-theme="system" aria-pressed="true"><span class="theme-icon theme-icon-system" aria-hidden="true"></span><span data-i18n="themeSystem">System</span></button>
+      <div class="settings-brand">
+        <img class="brand-mark" src="../assets/companion-mark.svg" alt="" aria-hidden="true">
+        <div class="settings-heading">
+          <span class="eyebrow" data-i18n="settingsEyebrow">DESKTOP COMPANION</span>
+          <h1 data-i18n="settingsTitle">Settings</h1>
+          <p data-i18n="settingsDescription">Choose a companion and make it yours.</p>
+        </div>
       </div>
-    </section>
-    <label class="field pet-field"><span data-i18n="pet">Pet</span><select id="pet-select"></select></label>
-    <p id="pet-description" class="hint"></p>
-    <label class="field range-field"><span><span data-i18n="size">Size</span><output id="size-value"></output></span><input id="size" type="range" min="88" max="240" step="2"></label>
-    <label class="field range-field"><span><span data-i18n="opacity">Opacity</span><output id="opacity-value"></output></span><input id="opacity" type="range" min="35" max="100" step="5"></label>
-    <label class="check"><input id="always-on-top" type="checkbox"><span data-i18n="keepOnTop">Keep above other windows</span></label>
-    <label class="check"><input id="reduced-motion" type="checkbox"><span data-i18n="reducedMotion">Reduce motion</span></label>
-    <section class="library-card">
-      <div><strong data-i18n="library">Pet library</strong><p data-i18n="libraryDescription">Add pet folders here to grow your collection.</p><code id="library-path"></code></div>
-      <div class="actions"><button id="open-library" class="secondary" data-i18n="openFolder">Open folder</button><button id="rescan" class="secondary" data-i18n="refresh">Refresh</button></div>
-    </section>
-    <footer><span id="pet-count"></span><span data-i18n="localFiles">Local files · nothing is sent</span></footer>
+      <button id="settings-close" class="icon-button" type="button" title="Close settings" aria-label="Close settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+      </button>
+    </header>
+    <div class="settings-content">
+      <section class="settings-section" aria-labelledby="appearance-title">
+        <div class="section-heading">
+          <h2 id="appearance-title" data-i18n="appearance">Appearance</h2>
+          <label class="language-field">
+            <span data-i18n="language">Language</span>
+            <select id="language"><option value="en">English</option><option value="zh">简体中文</option></select>
+          </label>
+        </div>
+        <div class="theme-options" role="group" aria-labelledby="appearance-title">
+          <button type="button" class="theme-option" data-theme="light" aria-pressed="false"><span class="theme-icon theme-icon-light" aria-hidden="true"></span><span data-i18n="themeLight">Light</span></button>
+          <button type="button" class="theme-option" data-theme="dark" aria-pressed="true"><span class="theme-icon theme-icon-dark" aria-hidden="true"></span><span data-i18n="themeDark">Dark</span></button>
+          <button type="button" class="theme-option" data-theme="system" aria-pressed="false"><span class="theme-icon theme-icon-system" aria-hidden="true"></span><span data-i18n="themeSystem">System</span></button>
+        </div>
+      </section>
+      <section class="settings-section" aria-labelledby="pet-title">
+        <div class="section-heading"><h2 id="pet-title" data-i18n="pet">Pet</h2></div>
+        <select id="pet-select" class="pet-select" aria-labelledby="pet-title"></select>
+        <p id="pet-description" class="hint"></p>
+        <div class="range-grid">
+          <label class="range-field"><span><span data-i18n="size">Size</span><output id="size-value"></output></span><input id="size" type="range" min="88" max="240" step="2"></label>
+          <label class="range-field"><span><span data-i18n="opacity">Opacity</span><output id="opacity-value"></output></span><input id="opacity" type="range" min="35" max="100" step="5"></label>
+        </div>
+      </section>
+      <section class="settings-section" aria-labelledby="behavior-title">
+        <div class="section-heading"><h2 id="behavior-title" data-i18n="behavior">Behavior</h2></div>
+        <div class="behavior-list">
+          <label class="check"><span data-i18n="keepOnTop">Keep above other windows</span><input id="always-on-top" type="checkbox"></label>
+          <label class="check"><span data-i18n="reducedMotion">Reduce motion</span><input id="reduced-motion" type="checkbox"></label>
+          <label class="check"><span data-i18n="wander">Let the selected pet wander around</span><input id="wander" type="checkbox"></label>
+        </div>
+      </section>
+      <section class="library-card" aria-labelledby="library-title">
+        <div class="library-heading">
+          <div><h2 id="library-title" data-i18n="library">Pet library</h2><p data-i18n="libraryDescription">Add pet folders here to grow your collection.</p></div>
+          <span id="pet-count" class="pet-count"></span>
+        </div>
+        <code id="library-path"></code>
+        <div class="actions"><button id="open-library" class="primary-action" data-i18n="openFolder">Open folder</button><button id="rescan" class="secondary" data-i18n="refresh">Refresh</button></div>
+      </section>
+      <footer><span data-i18n="localFiles">Local files · nothing is sent</span></footer>
+    </div>
   </main>
 </body>
 </html>

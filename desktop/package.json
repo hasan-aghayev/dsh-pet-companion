@@ -1,1 +1,5 @@
-{"name":"lokki-companion-desktop","version":"1.0.0","main":"main.cjs"}
+{
+  "name": "dsh-pet-companion-desktop",
+  "version": "1.0.0",
+  "main": "main.cjs"
+}

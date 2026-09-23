@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">DSH Pet Companion</title>
+  <defs>
+    <linearGradient id="pet" x1=".15" y1=".05" x2=".85" y2="1">
+      <stop offset="0" stop-color="#70C8FF"/>
+      <stop offset="1" stop-color="#4F7BEE"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#42D7CF"/>
+      <stop offset="1" stop-color="#6D9EFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="15" y="15" width="226" height="226" rx="57" fill="#17191F" stroke="#373B46" stroke-width="5"/>
+  <ellipse cx="128" cy="130" rx="88" ry="54" transform="rotate(-28 128 130)" fill="none" stroke="url(#orbit)" stroke-width="7" opacity=".72"/>
+  <circle cx="49" cy="91" r="13" fill="#43D7CF" stroke="#17191F" stroke-width="5"/>
+  <path d="M195 179 204 163 213 179 229 188 213 197 204 213 195 197 179 188Z" fill="#75A7FF" stroke="#17191F" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M76 119 73 88Q72 75 84 77L108 99Q128 92 148 99L172 77Q184 75 183 88L180 119Q194 132 191 153Q186 194 128 202Q70 194 65 153Q62 132 76 119Z" fill="url(#pet)" stroke="#101820" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M91 140Q102 128 113 140M143 140Q154 128 165 140" fill="none" stroke="#142332" stroke-width="8" stroke-linecap="round"/>
+  <path d="M112 163Q128 178 144 163" fill="none" stroke="#142332" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="100" cy="136" r="3.5" fill="#EAF8FF"/>
+  <circle cx="152" cy="136" r="3.5" fill="#EAF8FF"/>
+</svg>

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Lokki Companion",
-    "description": "悬浮桌面的宠物伙伴，可显示 DSH 智能体活动，并支持不断扩展的本地宠物库。"
+    "title": "DSH 桌面宠物伙伴",
+    "description": "适用于 DeepSeek Harness 的桌面宠物伙伴，可响应智能体活动，并通过本地宠物库持续扩展。"
   }
 }

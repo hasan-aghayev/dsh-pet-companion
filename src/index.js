@@ -4,32 +4,36 @@ import { fileURLToPath } from 'node:url'
 import Schema from '@deepseek-ai/schemastery'
 import { discoverPets } from './pets.js'
 import { submitPrompt } from './input-bridge.js'
-import { defaultDshHome, desktopEntry, ensureElectron, spawnCompanion } from './runtime.js'
+import { registerVisibilityRoute } from './visibility-route.js'
+import { prepareDataRoot, prepareDirectoryRoot } from './data-root.js'
+import { canHostCompanionOnWindows, defaultDshHome, desktopEntry, ensureElectron, prepareWslWindowsCompanion, spawnCompanion } from './runtime.js'
 
-export const name = 'lokki-companion'
-export const inject = ['agents']
+export const name = 'pet-companion'
+export const inject = ['agents', 'webServer', 'connection']
 
 export const Config = Schema.object({
   enabled: Schema.boolean().default(true),
+  visible: Schema.boolean().default(true),
   petId: Schema.string().default('lokki'),
   size: Schema.number().default(150),
   opacity: Schema.number().default(100),
   alwaysOnTop: Schema.boolean().default(true),
   reducedMotion: Schema.boolean().default(false),
+  wander: Schema.boolean().default(true),
   language: Schema.union(['en', 'zh']).default('en'),
   themePreference: Schema.union(['system', 'light', 'dark']).default('system'),
 })
 
 const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url))
 const BUILT_IN_PETS = path.join(PLUGIN_ROOT, 'assets', 'pets')
-const SETTINGS_KEYS = ['petId', 'size', 'opacity', 'alwaysOnTop', 'reducedMotion', 'language', 'themePreference']
+const SETTINGS_KEYS = ['petId', 'size', 'opacity', 'alwaysOnTop', 'reducedMotion', 'wander', 'language', 'themePreference', 'visible']
 
 function clampSettings(input, fallback) {
   const settings = { ...fallback, ...input }
   settings.petId = typeof settings.petId === 'string' ? settings.petId : fallback.petId
   settings.size = Math.max(88, Math.min(240, Number(settings.size) || fallback.size))
   settings.opacity = Math.max(35, Math.min(100, Number(settings.opacity) || fallback.opacity))
-  for (const key of ['alwaysOnTop', 'reducedMotion']) settings[key] = Boolean(settings[key])
+  for (const key of ['alwaysOnTop', 'reducedMotion', 'wander', 'visible']) settings[key] = Boolean(settings[key])
   settings.language = ['en', 'zh'].includes(settings.language) ? settings.language : fallback.language
   settings.themePreference = ['system', 'light', 'dark'].includes(settings.themePreference) ? settings.themePreference : fallback.themePreference
   return settings
@@ -52,9 +56,9 @@ export function apply(ctx, config) {
   }
 
   const dshHome = path.resolve(defaultDshHome())
-  const dataRoot = path.join(dshHome, 'lokki-companion')
+  const dataRoot = path.join(dshHome, 'pet-companion')
   const userLibrary = path.join(dataRoot, 'pets')
-  const cacheRoot = path.join(dshHome, 'cache', 'lokki-companion')
+  const cacheRoot = path.join(dshHome, 'cache', 'pet-companion')
   const settingsFile = path.join(dataRoot, 'settings.json')
   const stateFile = path.join(dataRoot, 'sessions', process.pid + '.json')
   const fallbackSettings = clampSettings(config, config)
@@ -66,12 +70,15 @@ export function apply(ctx, config) {
   let writeChain = Promise.resolve()
   let lastState = ''
   let preferredAgentId = [...agents.keys()].at(-1) || null
+  let petEvent = null
+  let petEventTimer
+  let pendingHumanQuestions = 0
   const requestDir = path.join(dataRoot, 'input-requests')
   const resultDir = path.join(dataRoot, 'input-results')
 
   const currentState = () => {
     const activeAgents = [...agents.values()].filter((status) => status === 'running').length
-    return { state: activeAgents > 0 ? 'running' : 'idle', activeAgents, totalAgents: agents.size, agents: [...agents].map(([id, status]) => ({ id, status })), preferredAgentId, updatedAt: Date.now() }
+    return { state: activeAgents > 0 ? 'running' : 'idle', activeAgents, totalAgents: agents.size, petEvent, agents: [...agents].map(([id, status]) => ({ id, status })), preferredAgentId, updatedAt: Date.now() }
   }
 
   const publish = () => {
@@ -82,6 +89,31 @@ export function apply(ctx, config) {
     writeChain = writeChain.then(() => atomicJson(stateFile, JSON.parse(encoded))).catch((error) => {
       ctx.logger?.warn?.('could not update companion state: ' + error.message)
     })
+  }
+
+  const setPetEvent = (state, duration = 0) => {
+    clearTimeout(petEventTimer)
+    petEventTimer = undefined
+    petEvent = state ? { state, until: duration > 0 ? Date.now() + duration : 0 } : null
+    publish()
+    if (state && duration > 0) {
+      petEventTimer = setTimeout(() => {
+        petEventTimer = undefined
+        if (petEvent?.state === state) setPetEvent(null)
+      }, duration)
+      petEventTimer.unref?.()
+    }
+  }
+
+  const waitForHuman = async (_request, next) => {
+    pendingHumanQuestions += 1
+    setPetEvent('waiting')
+    try {
+      return await next()
+    } finally {
+      pendingHumanQuestions = Math.max(0, pendingHumanQuestions - 1)
+      if (pendingHumanQuestions === 0 && petEvent?.state === 'waiting') setPetEvent(null)
+    }
   }
 
   const saveSettings = async (next) => {
@@ -99,10 +131,18 @@ export function apply(ctx, config) {
     }
   }
 
+  ctx.effect(() => registerVisibilityRoute(ctx.webServer, {
+    requestRejection: (req) => ctx.connection.requestRejection(req),
+    getVisible: () => settings.visible !== false,
+    setVisible: async (visible) => { await saveSettings({ ...settings, visible }) },
+  }), 'pet-companion sidebar visibility route')
+
   const launch = async () => {
     if (stopped || launching || child) return
     launching = true
     try {
+      await prepareDataRoot(dshHome)
+      await prepareDirectoryRoot(cacheRoot, path.join(dshHome, 'cache', 'lokki-companion'))
       await mkdir(userLibrary, { recursive: true })
       await mkdir(requestDir, { recursive: true, mode: 0o700 })
       await mkdir(resultDir, { recursive: true, mode: 0o700 })
@@ -114,19 +154,27 @@ export function apply(ctx, config) {
       if (process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
         throw new Error('No graphical display detected. In WSL2, enable WSLg and restart the DSH shell.')
       }
-      const binary = await ensureElectron(cacheRoot)
+      let runtime
+      const companionOptions = { dshHome, stateFile, settingsFile, libraryDir: userLibrary }
+      if (canHostCompanionOnWindows()) {
+        runtime = await prepareWslWindowsCompanion(companionOptions)
+        ctx.logger?.info?.('using the native Windows window for transparent pet rendering')
+      } else {
+        runtime = {
+          binary: await ensureElectron(cacheRoot),
+          options: { ...companionOptions, desktop: desktopEntry() },
+        }
+      }
       if (stopped) return
-      child = spawnCompanion(binary, {
-        desktop: desktopEntry(), dshHome, stateFile, settingsFile, libraryDir: userLibrary,
-      })
+      child = spawnCompanion(runtime.binary, runtime.options)
       child.on('error', (error) => ctx.logger?.error?.('could not start companion window: ' + error.message))
       child.on('exit', (code, signal) => {
         child = undefined
         if (!stopped) ctx.logger?.warn?.('companion window closed (code=' + (code ?? 'none') + ', signal=' + (signal ?? 'none') + '); restart DSH to reopen it')
       })
-      ctx.logger?.info?.('Lokki companion started; pet library: ' + userLibrary)
+      ctx.logger?.info?.('Pet companion started; pet library: ' + userLibrary)
     } catch (error) {
-      ctx.logger?.error?.('could not start Lokki companion: ' + error.message)
+      ctx.logger?.error?.('could not start DSH Pet Companion: ' + error.message)
     } finally {
       launching = false
     }
@@ -147,6 +195,19 @@ export function apply(ctx, config) {
     if (preferredAgentId === agent.id) preferredAgentId = [...agents.keys()].at(-1) || null
     publish()
   })
+
+  ctx.on('agent/error', ({ agent }) => {
+    if (agents.has(agent.id)) setPetEvent('failed', 2400)
+  })
+  ctx.on('agent/request-error', async (_event, next) => {
+    setPetEvent('waiting', 1100)
+    return next()
+  })
+  ctx.on('agent/turn-stopping', ({ agent }) => {
+    if (agents.has(agent.id)) setPetEvent('review', 1400)
+  })
+  ctx.on('user-questions/request', waitForHuman)
+  ctx.on('approval/request', waitForHuman)
 
   const processPromptRequests = async () => {
     let files = []
@@ -190,6 +251,7 @@ export function apply(ctx, config) {
 
     return async () => {
       stopped = true
+      clearTimeout(petEventTimer)
       clearInterval(settingsTimer)
       clearInterval(promptTimer)
       clearInterval(libraryTimer)
@@ -203,7 +265,7 @@ export function apply(ctx, config) {
         if (!exited) processToStop.kill('SIGKILL')
       }
       await rm(stateFile, { force: true }).catch(() => {})
-      ctx.logger?.info?.('Lokki companion stopped')
+      ctx.logger?.info?.('Pet companion stopped')
     }
-  }, 'lokki-companion desktop process')
+  }, 'pet-companion desktop process')
 }

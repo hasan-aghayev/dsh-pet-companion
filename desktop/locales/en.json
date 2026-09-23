@@ -1,6 +1,6 @@
 {
-  "appTitle": "Lokki Companion",
-  "settingsTitle": "Lokki settings",
+  "appTitle": "DSH Pet Companion",
+  "settingsTitle": "Settings",
   "settingsShortcut": "Open settings",
   "pet": "Pet",
   "builtIn": "built-in",
@@ -30,9 +30,14 @@
   "pixels": "px",
   "percent": "%",
   "typeMessage": "Type a message",
-  "closePet": "Close Lokki",
+  "closePet": "Close pet",
   "inputPlaceholder": "Write a message · Enter to send",
   "sending": "Sending…",
   "sent": "Message added to the session.",
-  "noSessions": "No live DSH sessions."
+  "noSessions": "No live DSH sessions.",
+  "wander": "Let the selected pet wander around",
+  "settingsDescription": "Choose a companion and make it yours.",
+  "settingsEyebrow": "DESKTOP COMPANION",
+  "closeSettings": "Close settings",
+  "behavior": "Behavior"
 }

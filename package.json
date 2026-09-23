@@ -1,7 +1,8 @@
 {
-  "name": "dsh-lokki-companion",
+  "name": "dsh-pet-companion",
   "version": "0.1.0",
-  "description": "A floating desktop companion for DeepSeek Harness with a reusable pet library and live agent pulse.",
+  "description": "A floating desktop companion for DeepSeek Harness with activity-aware pets and a growing local collection.",
+  "icon": "./assets/companion-mark.svg",
   "license": "MIT",
   "type": "module",
   "main": "src/index.js",
@@ -15,11 +16,13 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "locale/"
+    "locale/",
+    "client.js",
+    "screenshots.json"
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/pets.js && node --check src/runtime.js && node --check src/input-bridge.js && node --check desktop/main.cjs && node --check desktop/wslg-topmost.cjs && node --check desktop/preload.cjs && node --check desktop/renderer.js && node --test"
+    "check": "node --check client.js && node --check src/index.js && node --check src/data-root.js && node --check src/visibility-route.js && node --check src/pets.js && node --check src/runtime.js && node --check src/input-bridge.js && node --check desktop/main.cjs && node --check desktop/close-pet.cjs && node --check desktop/wslg-topmost.cjs && node --check desktop/native-drag.cjs && node --check desktop/preload.cjs && node --check desktop/renderer.js && node --test"
   },
   "dependencies": {
     "@electron/get": "^5.1.0",
@@ -35,6 +38,15 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-locale"
+      ]
     }
   },
   "keywords": [
@@ -45,14 +57,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hasan-aghayev/dsh-lokki-companion.git"
+    "url": "https://github.com/hasan-aghayev/dsh-pet-companion.git"
   },
   "bugs": {
-    "url": "https://github.com/hasan-aghayev/dsh-lokki-companion/issues"
+    "url": "https://github.com/hasan-aghayev/dsh-pet-companion/issues"
   },
   "exports": {
     ".": "./src/index.js",
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./locale/*.json": "./locale/*.json",
+    "./client": "./client.js"
   }
 }

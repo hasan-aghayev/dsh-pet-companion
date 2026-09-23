@@ -54,6 +54,7 @@ async function parsePetDirectory(directory, source) {
   return {
     id: manifest.id,
     displayName: manifest.displayName.trim(),
+    displayNameZh: typeof manifest.displayNameZh === 'string' ? manifest.displayNameZh.slice(0, 48) : '',
     description: typeof manifest.description === 'string' ? manifest.description.slice(0, 240) : '',
     descriptionZh: typeof manifest.descriptionZh === 'string' ? manifest.descriptionZh.slice(0, 240) : '',
     mode,
@@ -99,6 +100,7 @@ export function publicPet(pet) {
   return {
     id: pet.id,
     displayName: pet.displayName,
+    displayNameZh: pet.displayNameZh,
     description: pet.description,
     descriptionZh: pet.descriptionZh,
     mode: pet.mode,

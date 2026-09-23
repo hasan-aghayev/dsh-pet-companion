@@ -1,84 +1,97 @@
-# Lokki Companion for DSH
+# DSH Pet Companion
 
-A floating pet for DeepSeek Harness. Lokki stays in a separate desktop window while DSH is minimized, follows live agent activity, and can switch between a built-in pet and a growing local pet library.
+<p align="center">
+  <img src="assets/companion-mark.svg" width="72" alt="DSH Pet Companion">
+</p>
 
-## What makes it different
+A floating desktop pet for DeepSeek Harness. It reacts to agent activity in a separate transparent window and includes a folder-based library for adding pets from animated atlases or transparent portraits. Lokki is the first built-in pet.
 
-- **Quiet activity cues:** Lokki changes its animation while DSH agents are working. It listens only to public agent lifecycle events; no title or status bubble is shown.
-- **A pet shelf, not a one-character plugin:** Lokki is included. Add new companions later by placing one pet folder in the local library; there is no plugin rebuild or edit to the plugin source.
-- **Two art formats:** animated Hatch-Pet v2 atlases and transparent PNG/WebP portraits. A portrait gets a gentle breathing motion; a v2 atlas uses its native idle and working animation rows.
-- **Separate desktop window:** transparent, movable, resizable, and optionally kept above other windows. Under WSLg, a small Windows bridge keeps it above Windows apps and hides the pet from the taskbar without taking focus. DSH can be minimized independently.
-- **Companion controls:** hover for Settings, Type a message, and Close. The message composer sends to the most recently active live DSH session through DSH's public agent API; press Enter to send and Shift+Enter for a new line. Choose a pet, language, appearance, size, opacity, reduced motion, and always-on-top behavior in Settings.
+## Screenshots
 
-The plugin downloads a pinned Electron runtime from the official Electron release host on first start and uses Electron's checksum verification. It is cached under $DSH_HOME/cache/lokki-companion; the package has no install-time build script. A graphical session is required. WSL2 should have WSLg enabled.
+<table>
+  <tr>
+    <th align="center">Companion and hover controls</th>
+    <th align="center">Settings in English</th>
+    <th align="center">Settings in Simplified Chinese</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/readme/companion-controls.png" width="230" alt="Lokki with settings, message, and close controls"></td>
+    <td align="center"><img src="assets/readme/settings-en.png" width="360" alt="English appearance and behavior settings"></td>
+    <td align="center"><img src="assets/readme/settings-zh.png" width="360" alt="Simplified Chinese appearance and behavior settings"></td>
+  </tr>
+</table>
 
-## Install
+## What it does
+
+- Displays the selected pet in its own movable desktop window, including when DSH is minimized.
+- Switches between idle, working, waiting or review, and error poses as DSH agent events change.
+- Provides hover controls for Settings, a text composer, and Close pet. Right-clicking the pet opens a menu with Settings, Next pet, and Close pet.
+- Lets the DSH sidebar's **Show pet** switch hide or restore the companion while leaving the plugin enabled. Closing the pet also turns this switch off.
+- Offers appearance, language, size, opacity, always-on-top, reduced-motion, and wandering settings.
+- Follows DSH's English or Chinese locale by default; the language can also be selected in Settings.
+- Loads additional pet folders without rebuilding or reinstalling the plugin. A single transparent portrait can be used without creating an animation atlas.
+
+## Install and remove
 
 ```sh
-dsh plugin --profile web add github:hasan-aghayev/dsh-lokki-companion
+dsh plugin --profile web add github:hasan-aghayev/dsh-pet-companion
 ```
 
-The first start downloads the desktop runtime. After it finishes, Lokki opens in a separate window. Remove the bundle with:
+Change web to the DSH profile you use. On first start, the companion downloads its pinned Electron runtime and opens a desktop window. A graphical desktop is required; WSL2 users need WSLg enabled.
+
+To remove the plugin:
 
 ```sh
-dsh plugin --profile web remove dsh-lokki-companion
+dsh plugin --profile web remove dsh-pet-companion
 ```
 
-Change web to the DSH profile you use. Removing the plugin keeps your pet library and settings under $DSH_HOME/lokki-companion, so they are available if you install it again. To remove your personal data too, delete that directory yourself. DSH's plugin manager can disable the bundle without removing it.
+Disabling the plugin in DSH stops its desktop process but keeps it installed. Hiding the pet with **Show pet** only changes visibility. Pet files and preferences remain under $DSH_HOME/pet-companion after removal, so they are available if you install the plugin again.
 
-## Settings
+## Settings and controls
 
-Hover the pet and choose the gear icon, or double-click the pet, to open settings. English is the default language; Simplified Chinese is also available. Choose Light, Dark, or System appearance to match the DSH theme options. The settings window uses a small local subset of DSH ui-theme tokens because it runs in its own desktop window. Settings include pet selection, size, opacity, always-on-top, reduced motion, opening the pet folder, and rescanning the library.
+Open Settings with the gear button or by double-clicking the pet. Use **Show pet** in the DSH sidebar to bring a hidden companion back. The **Close pet** control hides the companion and turns off **Show pet**; the plugin remains enabled.
 
-You can also disable the companion in DSH configuration:
-
-```yaml
-- id: lokki-companion
-  config:
-    enabled: false
-```
+The text composer sends the entered message to the most recently active live DSH session through DSH's public agent API. It does not show a session picker. Press Enter to send and Shift+Enter to add a line.
 
 ## Add another pet
 
-Open the library from settings. Create a folder whose name matches its pet id, then place pet.json and the image inside. The plugin checks the folder every few seconds and notices new pets without a restart; the Refresh button rescans immediately.
+Open the **Pet library** folder from Settings. Add one folder for each pet, with a pet.json manifest and its artwork inside. The folder name must match the manifest's id. New folders are discovered automatically within a few seconds; **Refresh** rescans the library immediately.
 
-### Animated atlas
+### Hatch-Pet v2 animation atlas
 
-Use a Hatch-Pet v2 atlas, exactly 1536×2288 pixels (8 columns × 11 rows), plus a manifest:
+Use a 1536 x 2288 pixel atlas (8 columns by 11 rows) and set spriteVersionNumber to 2:
 
 ```json
 {
   "id": "miso",
   "displayName": "Miso",
   "description": "A small lunar cat.",
-  "descriptionZh": "一只小小的月亮猫。",
   "spriteVersionNumber": 2,
   "spritesheetPath": "spritesheet.webp"
 }
 ```
 
-Folder: .../lokki-companion/pets/miso/. The atlas follows the standard Hatch-Pet v2 rows: row 0 is idle and row 7 is working.
+Optional displayNameZh and descriptionZh fields provide Simplified Chinese labels. Hatch-Pet v2 uses its standard animation rows, including idle, walking, waving, jumping, failed, waiting, working, and review poses, plus 16 look directions.
 
-### Portrait
+### Transparent portrait
 
-A single transparent PNG/WebP needs no animation atlas:
+A single PNG or WebP can be used without an animation atlas. Portraits get a gentle breathing motion:
 
 ```json
 {
   "id": "miso-portrait",
   "displayName": "Miso",
   "description": "A portrait with gentle motion.",
-  "descriptionZh": "一张带有轻柔动态效果的肖像。",
   "format": "portrait",
   "imagePath": "portrait.png"
 }
 ```
 
-Use the optional descriptionZh field to localize a pet description for Simplified Chinese. Each pet folder is validated before display. Names use lowercase letters, digits, and hyphens; image paths must remain inside that pet's folder; PNG/WebP files must be under 25 MB. The built-in lokki id is reserved.
+Names may use lowercase letters, digits, and hyphens. Image paths must stay inside the pet folder. Images must be no larger than 25 MiB; portrait dimensions can be up to 4096 x 4096 pixels. Built-in pet IDs are reserved.
 
 ## Data and privacy
 
-Pet art, settings, window position, and session IDs stay on the local machine. Lokki observes only DSH agent lifecycle status and never reads conversation history, files, or credentials. Text entered in the companion is sent only to the most recently active live DSH session, through DSH's public agent API, and then follows that session's configured provider route. The plugin downloads Electron once from the official release host; it makes no other network requests itself.
+Pet art, preferences, window position, and session IDs stay on the local machine. The plugin observes DSH agent lifecycle and approval or question events to select an animation. It does not read conversation text, files, or credentials. Text submitted from the composer is sent only to the selected live DSH session through DSH's public agent API. The plugin downloads the pinned Electron runtime on first start and makes no other network requests itself.
 
 ## Development
 
@@ -87,8 +100,8 @@ pnpm install
 pnpm check
 ```
 
-The package contains ready-to-run JavaScript and static desktop files. GitHub installation therefore needs no prepare script or build-script approval. The root package declares dsh.bundle and cordis.patch.yml.
+The package contains ready-to-run JavaScript and static desktop files, so it needs no install-time build script. The root package.json declares the dsh.bundle manifest in cordis.patch.yml.
 
 ## License
 
-MIT. The Lokki sprite art is included with permission from its creator, Hasan Aghayev; do not redistribute the artwork separately from this plugin without permission.
+MIT. The Lokki sprite art is included with permission from its creator, Hasan Aghayev. Do not redistribute the artwork separately from this plugin without permission.
