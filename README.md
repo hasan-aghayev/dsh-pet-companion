@@ -100,6 +100,10 @@ Names may use lowercase letters, digits, and hyphens. Image paths must stay insi
 
 Pet art, preferences, window position, and session IDs stay on the local machine. The plugin observes DSH agent lifecycle and approval or question events to select an animation. It does not read conversation text, files, or credentials. Text submitted from the composer is sent only to the selected live DSH session through DSH's public agent API. The plugin downloads the pinned Electron runtime on first start and makes no other network requests itself.
 
+## Compatibility
+
+Version 0.1.1 is activation-tested with DeepSeek Harness `0.2.1-rc.2` and declares the supported host range as `>=0.2.1-rc.2 <0.2.2`. The package uses ready-to-run JavaScript and does not require a TypeScript build during installation.
+
 ## Development
 
 ```sh

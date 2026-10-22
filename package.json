@@ -1,13 +1,14 @@
 {
   "name": "dsh-pet-companion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A floating desktop companion for DeepSeek Harness with activity-aware pets and a growing local collection.",
   "icon": "./assets/companion-mark.svg",
   "license": "MIT",
   "type": "module",
   "main": "src/index.js",
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.1-rc.2 <0.2.2"
   },
   "files": [
     "src/",
