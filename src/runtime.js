@@ -103,7 +103,13 @@ export function spawnCompanion(binary, options) {
     '--settings-file=' + options.settingsFile,
     '--library-dir=' + options.libraryDir,
   ]
-  const child = spawn(binary, args, { detached: false, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true })
+  // The DSH host is itself an Electron application and exposes
+  // ELECTRON_RUN_AS_NODE=1 to its process tree. An electron.exe that inherits
+  // it runs as plain Node, so require('electron') in desktop/main.cjs fails
+  // with MODULE_NOT_FOUND and the window exits before app.whenReady().
+  const env = { ...process.env }
+  delete env.ELECTRON_RUN_AS_NODE
+  const child = spawn(binary, args, { detached: false, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true, env })
   child.stderr?.on('data', (chunk) => {
     const lines = String(chunk).split(/\r?\n/).filter((line) => /startup failed|Error launching app|FATAL|uncaught exception/i.test(line))
     if (lines.length) process.stderr.write('[dsh-pet-companion/electron] ' + lines.join('\n') + '\n')
